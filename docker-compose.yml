@@ -36,6 +36,21 @@ services:
     volumes:
       - ./kafka-data:/var/lib/kafka/data
 
+  fastapi_kafka:
+    build: .
+    hostname: fastapi_kafka
+    container_name: fastapi_kafka
+    command: sh -c "./wait && python main.py"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - kafka
+    environment:
+      - WAIT_HOSTS=kafka:29092
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+
 networks:
   default:
     name: kafka-network
