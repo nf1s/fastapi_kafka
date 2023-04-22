@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 import json
 
 app = FastAPI()
-producer = KafkaProducer(bootstrap_servers='kafka:29092', value_serializer=lambda v: json.dumps(v), key_serializer=lambda v: json.dumps(v))
+producer = KafkaProducer(bootstrap_servers='kafka:29092', value_serializer=lambda v: v, key_serializer=lambda v: json.dumps(v))
 
 class Item(BaseModel):
     id: int
@@ -21,7 +21,7 @@ async def create_item(item: Item):
     if item.id in items:
         raise HTTPException(status_code=400, detail="Item already exists")
     items[item.id] = item
-    producer.send('test.events', key="a", value={"action": "create", "item": item.dict()})
+    producer.send(topic='test.events', key='a', value={"action": "create", "item": item.dict()})
     return item
 
 
@@ -31,7 +31,7 @@ async def update_item(item_id: int, item: Item):
     if item_id not in items:
         raise HTTPException(status_code=404, detail="Item not found")
     items[item_id] = item
-    producer.send('test.events', {"action": "update", "item": item.dict()})
+    producer.send(topic='test.events', key='a', value={"action": "update", "item": item.dict()})
     return item
 
 # Delete an item
@@ -40,7 +40,7 @@ async def delete_item(item_id: int):
     if item_id not in items:
         raise HTTPException(status_code=404, detail="Item not found")
     del items[item_id]
-    producer.send('test.events', {"action": "delete", "item_id": item_id})
+    producer.send(topic='test.events', key='a', value={"action": "delete", "item_id": item_id})
     return {"result": "Item deleted"}
 
 
