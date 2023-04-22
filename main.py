@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 import json
 
 app = FastAPI()
-producer = KafkaProducer(bootstrap_servers='kafka:29092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+producer = KafkaProducer(bootstrap_servers='kafka:29092', value_serializer=lambda v: json.dumps(v), key_serializer=lambda v: json.dumps(v))
 
 class Item(BaseModel):
     id: int
@@ -21,7 +21,7 @@ async def create_item(item: Item):
     if item.id in items:
         raise HTTPException(status_code=400, detail="Item already exists")
     items[item.id] = item
-    producer.send('test.events', {"action": "create", "item": item.dict()})
+    producer.send('test.events', key="a", value={"action": "create", "item": item.dict()})
     return item
 
 
